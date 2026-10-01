@@ -44,6 +44,10 @@ goods (boards + assembly + parts) + shipping  = CIF value (THB)
 = landed cost
 ```
 
+Boards with a radio (WiFi/BLE/LoRa) can be held at customs for NBTC
+paperwork — ask the courier before shipping (UNVERIFIED how strictly this is
+applied to prototype quantities).
+
 Since 2024–2026 low-value parcels no longer escape VAT/duty (see references);
 couriers like DHL pay at the border and invoice the receiver. VAT-registered companies can
 usually claim the import VAT back as input tax — tell them to keep the import

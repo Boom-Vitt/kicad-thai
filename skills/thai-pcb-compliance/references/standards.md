@@ -30,6 +30,12 @@ whether it is มาตรฐานบังคับ).
 | 433 MHz: UNVERIFIED (only a forum claim of licence-exempt below ~10 mW) | — |
 | Whether a certified module's SDoC covers your finished product: UNVERIFIED — assume the **finished product needs its own SDoC** under its own brand/model | — |
 
+## Product liability (applies even without a mandatory มอก.)
+
+| Fact | Source |
+|---|---|
+| **พ.ร.บ.ความรับผิดต่อความเสียหายที่เกิดขึ้นจากสินค้าที่ไม่ปลอดภัย พ.ศ. 2551** (Product Liability Act B.E. 2551): manufacturers, importers and sellers can be liable for damage from unsafe products without the injured party proving negligence. Reason to safety-test mains products even when no มอก. is mandatory | law name well known; check details with a lawyer — https://www.krisdika.go.th |
+
 ## Mains supply
 
 | Fact | Source |

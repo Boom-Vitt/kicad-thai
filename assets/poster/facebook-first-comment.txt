@@ -1,0 +1,18 @@
+🔗 https://github.com/Boom-Vitt/kicad-thai (ฟรี · MIT · Open Source)
+
+ติดตั้งใน Claude Code
+claude plugin marketplace add Boom-Vitt/kicad-thai
+claude plugin install kicad-thai@kicad-thai
+
+ใช้กับ Codex, Cursor, Gemini, Copilot และเครื่องมืออื่น
+npx skills add Boom-Vitt/kicad-thai
+
+ทำอะไรได้บ้าง
+• ตรวจ ERC/DRC พร้อมกฎสำเร็จรูปของ JLCPCB, PCBWay และโรงงานไทย อธิบาย error เป็นภาษาไทย
+• ทำ Gerber + BOM + CPL ส่งโรงงานในคำสั่งเดียว พร้อมตรวจว่าไฟล์ทองแดงครบทุกชั้น
+• เช็กลิสต์ มอก. / กสทช. และระยะห่างไฟบ้าน 220V พร้อมกฎ DRC
+• หาโรงงาน หาอะไหล่ในไทย และคำนวณภาษีนำเข้า
+• ใส่ตัวหนังสือไทยบนซิลก์สกรีน
+
+ทดสอบกับ KiCad 8, 9 และ 10 จริงทุกครั้งที่อัปเดต ข้อมูลกฎหมายตรวจล่าสุด 2 ต.ค. 2026 (ไม่ใช่คำปรึกษาทางกฎหมาย)
+ใครทำบอร์ดอยู่ ลองใช้แล้วมาเล่าให้ฟังได้ครับ หรือเปิด issue/PR บน GitHub ได้เลย 🙏

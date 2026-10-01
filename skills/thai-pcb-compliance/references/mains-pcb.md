@@ -57,8 +57,22 @@ ship as `kicad-check/assets/rules/mains-220v-addon.kicad_dru`.
 4. Never route low-voltage traces, pours or vias on *any* layer inside the
    reinforced boundary; check inner layers on 4-layer boards.
 5. Isolation parts (optocoupler, transformer, relay, Y-cap across the barrier)
-   must themselves carry a safety rating for reinforced insulation.
-6. Wide tracks for current (PCB Calculator), no thermal reliefs on high-current
+   must themselves carry a safety rating for reinforced insulation. For relays,
+   check the datasheet for reinforced insulation between coil and contacts
+   (many cheap blue relays don't have the pin spacing for it).
+6. Never use a non-isolated supply (capacitive dropper, non-isolated buck)
+   when anything is user-touchable (USB, buttons, headers, sensor wires): the
+   whole low-voltage side then sits at mains potential. If the AC-DC must be on
+   the board, use an encapsulated module with an IEC 62368-1 CB report and
+   reinforced insulation, and copy its datasheet layout.
+7. Draw a **Rule Area** (Place → Add Rule Area) over the isolation gap on
+   **all copper layers**, keeping out tracks, vias and zones: zone fills obey
+   clearance, not creepage, so a GND pour will otherwise creep up to the mains side.
+8. Make sure every mains net actually lands in the `Mains` class: name the nets
+   (`AC_L`, `AC_N`, `AC_L_FUSED`, `RELAY1_COM`…) and assign by pattern in
+   Schematic/Board Setup → Net Classes; auto-named nets like `Net-(F1-Pad2)`
+   silently stay in `Default` and escape the mains rules.
+9. Wide tracks for current (PCB Calculator), no thermal reliefs on high-current
    mains pads that get hot, and keep electrolytics away from heat sources.
 
 ## Cheapest way to stay out of mains entirely

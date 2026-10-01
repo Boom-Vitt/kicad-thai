@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=block" rel="stylesheet">
+<style>
+:root{--ink:#0b0c10;--ivory:#ece7d6;--coral:#ff5a45;--coral-d:#c93b29;--mute:#8a8a96;--lime:#c6ff5a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
+.poster{position:relative;width:1080px;height:1350px;color:var(--ivory);font-family:'IBM Plex Sans Thai Looped',sans-serif;
+  background:
+   radial-gradient(620px 360px at 50% 70%, rgba(255,90,69,.20), transparent 70%),
+   radial-gradient(900px 500px at 100% 0%, rgba(255,90,69,.07), transparent 60%),
+   var(--ink)}
+/* blueprint grid motif */
+.grid{position:absolute;inset:0;opacity:.07;
+  background-image:linear-gradient(var(--ivory) 1px,transparent 1px),linear-gradient(90deg,var(--ivory) 1px,transparent 1px);
+  background-size:54px 54px;mask-image:radial-gradient(ellipse at 50% 40%,#000 30%,transparent 75%)}
+.top{position:absolute;left:72px;right:72px;top:58px;display:flex;justify-content:space-between;align-items:baseline}
+.brand{font-family:'Bricolage Grotesque';font-weight:700;font-size:40px;letter-spacing:-.5px}
+.tag{color:var(--coral);font-weight:700;font-size:34px}
+h1{position:absolute;left:66px;top:112px;font-family:'Bricolage Grotesque';font-weight:800;font-size:212px;line-height:.86;letter-spacing:-6px;text-transform:uppercase}
+h1 .c{color:var(--coral)}
+.sub{position:absolute;left:72px;right:72px;top:500px;font-weight:600;font-size:50px;line-height:1.25}
+.sub b{color:var(--coral);font-weight:700}
+/* hero board */
+.stage{position:absolute;left:0;right:0;top:640px;height:400px;perspective:1700px}
+.desk{position:absolute;left:150px;right:150px;bottom:-10px;height:150px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,90,69,.38),rgba(255,90,69,.08) 60%,transparent)}
+.board{position:absolute;left:250px;top:10px;width:600px;height:380px;border-radius:20px;
+  transform:rotateX(54deg) rotateZ(-24deg) scale(.94);transform-style:preserve-3d;
+  box-shadow:0 2px 0 #e14a36,0 4px 0 #d24431,0 6px 0 #c13d2b,0 8px 0 #b03625,0 10px 0 #9c2f20,
+             0 60px 90px rgba(0,0,0,.65),0 0 120px rgba(255,90,69,.25)}
+.board svg{display:block;border-radius:20px}
+.badge{position:absolute;right:64px;top:250px;width:232px;height:232px;border-radius:50%;background:var(--coral);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ivory);
+  box-shadow:0 18px 50px rgba(255,90,69,.35)}
+.badge .big{font-family:'IBM Plex Sans Thai Looped';font-weight:700;font-size:88px;line-height:1}
+.badge .small{font-family:'JetBrains Mono';font-weight:600;font-size:19px;margin-top:10px;line-height:1.3;text-align:center}
+.feats{position:absolute;left:72px;right:72px;top:1048px;display:grid;grid-template-columns:1fr 1fr;gap:12px 40px;font-size:30px;font-weight:600}
+.feats div::before{content:"";display:inline-block;width:12px;height:12px;border-radius:2px;background:var(--coral);margin-right:14px;transform:translateY(-4px)}
+.foot{position:absolute;left:72px;right:72px;bottom:44px;text-align:center}
+.agents{font-family:'Bricolage Grotesque';font-weight:600;font-size:30px;letter-spacing:.2px}
+.rule{width:90px;height:2px;background:var(--mute);margin:16px auto}
+.url{font-family:'JetBrains Mono';font-weight:600;font-size:34px;color:var(--coral)}
+</style></head><body>
+<div class="poster">
+  <div class="grid"></div>
+  <div class="top"><div class="brand">BoomBigNose</div><div class="tag">ปลั๊กอินฟรี</div></div>
+  <h1>KiCad<br><span class="c">Thai</span></h1>
+  <div class="sub">ให้ AI ช่วยทำ PCB แบบวิศวกรไทย<br><b>ตรวจ DRC จนถึงส่งโรงงาน</b></div>
+
+  <div class="stage">
+    <div class="desk"></div>
+    <div class="board">
+      <svg width="600" height="380" viewBox="0 0 600 380" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="mask" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6a55"/><stop offset="1" stop-color="#f04a35"/></linearGradient>
+          <linearGradient id="chip" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a2b33"/><stop offset="1" stop-color="#121218"/></linearGradient>
+          <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+        </defs>
+        <rect width="600" height="380" rx="20" fill="url(#mask)"/>
+        <!-- copper traces under mask -->
+        <g stroke="#ff8a78" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".85">
+          <path d="M150 120 H230 L260 150 H330"/><path d="M150 140 H220 L250 170 H330"/><path d="M150 160 H210 L240 190 H330"/>
+          <path d="M405 175 H450 L480 205 V250"/><path d="M405 195 H440 L460 215 V300 H520"/>
+          <path d="M120 240 V300 H250"/><path d="M300 330 L330 300 H420"/>
+        </g>
+        <!-- isolation slot + mains zone -->
+        <rect x="455" y="40" width="8" height="120" rx="4" fill="#0b0c10" opacity=".85"/>
+        <rect x="474" y="34" width="104" height="132" rx="8" fill="none" stroke="#ece7d6" stroke-width="2.5" stroke-dasharray="7 6"/>
+        <text x="526" y="182" text-anchor="middle" font-family="IBM Plex Sans Thai Looped" font-weight="700" font-size="17" fill="#ece7d6">อันตราย 220V</text>
+        <rect x="488" y="50" width="76" height="46" rx="5" fill="url(#chip)"/>
+        <text x="526" y="78" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#8a8a96">RELAY</text>
+        <g fill="#ece7d6"><circle cx="500" cy="128" r="10"/><circle cx="526" cy="128" r="10"/><circle cx="552" cy="128" r="10"/></g>
+        <g fill="#f04a35"><circle cx="500" cy="128" r="4"/><circle cx="526" cy="128" r="4"/><circle cx="552" cy="128" r="4"/></g>
+        <!-- ESP32 module with antenna at edge -->
+        <rect x="40" y="40" width="110" height="150" rx="6" fill="#c8c3b4"/>
+        <rect x="46" y="76" width="98" height="108" rx="4" fill="url(#chip)"/>
+        <path d="M52 50 h20 v14 h14 v-14 h14 v14 h14 v-14 h20" stroke="#ff5a45" stroke-width="4" fill="none"/>
+        <text x="95" y="134" text-anchor="middle" font-family="JetBrains Mono" font-weight="600" font-size="15" fill="#ece7d6">ESP32-C3</text>
+        <!-- QFN MCU -->
+        <rect x="330" y="120" width="76" height="76" rx="6" fill="url(#chip)"/>
+        <g fill="#ece7d6"><rect x="322" y="128" width="8" height="5"/><rect x="322" y="140" width="8" height="5"/><rect x="322" y="152" width="8" height="5"/><rect x="322" y="164" width="8" height="5"/><rect x="322" y="176" width="8" height="5"/>
+          <rect x="406" y="128" width="8" height="5"/><rect x="406" y="140" width="8" height="5"/><rect x="406" y="152" width="8" height="5"/><rect x="406" y="164" width="8" height="5"/><rect x="406" y="176" width="8" height="5"/></g>
+        <circle cx="342" cy="132" r="4" fill="#5e5d52"/>
+        <!-- passives -->
+        <g><rect x="235" y="215" width="34" height="16" rx="2" fill="#1b1b22"/><rect x="229" y="215" width="9" height="16" fill="#ece7d6"/><rect x="266" y="215" width="9" height="16" fill="#ece7d6"/>
+          <rect x="235" y="250" width="34" height="16" rx="2" fill="#a07a50"/><rect x="229" y="250" width="9" height="16" fill="#ece7d6"/><rect x="266" y="250" width="9" height="16" fill="#ece7d6"/>
+          <rect x="300" y="235" width="34" height="16" rx="2" fill="#1b1b22"/><rect x="294" y="235" width="9" height="16" fill="#ece7d6"/><rect x="331" y="235" width="9" height="16" fill="#ece7d6"/>
+          <rect x="370" y="250" width="40" height="22" rx="3" fill="url(#chip)"/><rect x="376" y="244" width="6" height="6" fill="#ece7d6"/><rect x="398" y="244" width="6" height="6" fill="#ece7d6"/><rect x="387" y="272" width="6" height="6" fill="#ece7d6"/></g>
+        <!-- vias -->
+        <g fill="#ece7d6"><circle cx="230" cy="300" r="6"/><circle cx="300" cy="190" r="6"/><circle cx="420" cy="300" r="6"/><circle cx="480" cy="250" r="6"/><circle cx="120" cy="240" r="6"/></g>
+        <g fill="#c93b29"><circle cx="230" cy="300" r="2.5"/><circle cx="300" cy="190" r="2.5"/><circle cx="420" cy="300" r="2.5"/><circle cx="480" cy="250" r="2.5"/><circle cx="120" cy="240" r="2.5"/></g>
+        <!-- mounting holes -->
+        <g fill="#ece7d6"><circle cx="24" cy="356" r="12"/><circle cx="576" cy="356" r="12"/></g>
+        <g fill="#0b0c10"><circle cx="24" cy="356" r="6"/><circle cx="576" cy="356" r="6"/></g>
+        <!-- silkscreen -->
+        <g font-family="JetBrains Mono" font-size="13" fill="#ece7d6" font-weight="600">
+          <text x="238" y="208">R1</text><text x="238" y="286">C1</text><text x="303" y="228">R2</text><text x="372" y="292">Q1</text><text x="336" y="114">U1</text>
+        </g>
+        <text x="54" y="338" font-family="IBM Plex Sans Thai Looped" font-weight="700" font-size="30" fill="#ece7d6">ลายวงจร</text>
+        <text x="196" y="337" font-family="JetBrains Mono" font-weight="500" font-size="14" fill="#ece7d6" opacity=".9">KiCad Thai · rev ๑.๐</text>
+        <!-- fiducials -->
+        <g fill="#ece7d6"><circle cx="560" cy="300" r="5"/><circle cx="330" cy="356" r="5"/></g>
+        <rect width="600" height="380" rx="20" fill="url(#shine)"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="badge"><div class="big">ฟรี</div><div class="small">MIT License<br>Open Source</div></div>
+
+  <div class="feats">
+    <div>ตรวจ DRC ตามสเปกโรงงาน</div>
+    <div>Gerber · BOM · CPL คำสั่งเดียว</div>
+    <div>เช็ก มอก. · กสทช. · ไฟ 220V</div>
+    <div>ตัวหนังสือไทยบน PCB</div>
+  </div>
+
+  <div class="foot">
+    <div class="agents">Claude Code · Codex · Cursor · Gemini · Copilot</div>
+    <div class="rule"></div>
+    <div class="url">github.com/Boom-Vitt/kicad-thai</div>
+  </div>
+</div>
+</body></html>

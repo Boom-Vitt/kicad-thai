@@ -36,7 +36,8 @@ Key facts (sources in references/standards.md):
   assume the **finished product still needs its own SDoC** under its brand/model.
 - Design consequences to check in KiCad: antenna keep-out per the module
   datasheet, RF power configured in firmware so e.i.r.p. stays within the limit
-  with the antenna actually used, and a label space for the NBTC marking.
+  with the antenna actually used (e.g. ESP-IDF `esp_wifi_set_max_tx_power()`,
+  units of 0.25 dBm), and a label space for the NBTC marking.
 
 ## 3. Mains on the board (ไฟบ้าน 220 V)
 
@@ -53,7 +54,10 @@ KiCad 8 has no creepage check: measure creepage by hand (measure tool along
 the board surface, around slots) and tell the user to upgrade if possible.
 
 Push the user toward the simplest safe architecture: an external certified
-adapter keeps their own board SELV-only, which is cheaper to certify.
+adapter keeps their own board SELV-only, which is cheaper to certify. If mains
+must be on the board, use certified building blocks at the barrier (AC-DC
+module with a CB report, relay with reinforced coil–contact insulation) and
+never a non-isolated supply when anything is touchable.
 
 ## 4. Materials and environment
 
