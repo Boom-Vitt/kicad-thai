@@ -191,6 +191,11 @@ class Repo(unittest.TestCase):
         self.assertEqual(len(set(versions.values())), 1, versions)
         json.loads((ROOT / ".agents/plugins/marketplace.json").read_text())
 
+    def test_mains_rules_copy_in_sync(self):
+        addon = (ROOT / "skills/kicad-check/assets/rules/mains-220v-addon.kicad_dru").read_text()
+        doc = (ROOT / "skills/thai-pcb-compliance/references/mains-pcb.md").read_text()
+        self.assertIn("(rule" + addon.split("\n(rule", 1)[1].rstrip(), doc)
+
     def test_dru_presets_parse(self):
         presets = sorted((ROOT / "skills/kicad-check/assets/rules").glob("*.kicad_dru"))
         self.assertGreaterEqual(len(presets), 3)

@@ -74,9 +74,13 @@ local parts sources, use **thai-pcb-sourcing**.
 
 ```bash
 kicad-cli pcb export gerbers -o fab/gerbers/ --layers F.Cu,B.Cu,F.Paste,B.Paste,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts --subtract-soldermask board.kicad_pcb
-kicad-cli pcb export drill -o fab/gerbers/ --format excellon --excellon-units mm --excellon-zeros-format decimal --generate-map --map-format gerberx2 board.kicad_pcb
-kicad-cli sch export bom -o fab/bom.csv --fields "Reference,Value,Footprint,LCSC" --labels "Designator,Comment,Footprint,LCSC Part #" --group-by "Value,Footprint,LCSC" --ref-range-delimiter "" --exclude-dnp board.kicad_sch
+kicad-cli pcb export drill -o fab/gerbers/ --format excellon --excellon-units mm --excellon-zeros-format decimal --excellon-separate-th --generate-map --map-format gerberx2 board.kicad_pcb
+kicad-cli sch export bom -o fab/bom.csv --fields "Value,Reference,Footprint,LCSC" --labels "Comment,Designator,Footprint,LCSC Part #" --group-by "Value,Footprint,LCSC" --ref-range-delimiter "" --string-delimiter '"' --exclude-dnp board.kicad_sch
 kicad-cli pcb export pos -o fab/pos.csv --side both --format csv --units mm --exclude-dnp board.kicad_pcb
 ```
 
-Add `In1.Cu,In2.Cu,…` to `--layers` for multilayer boards.
+Add `In1.Cu,In2.Cu,…` to `--layers` for multilayer boards. If a copper layer
+has a user name (`(0 "F.Cu" signal "top_layer")` in the board file), also list
+that name — kicad-cli 8/9 silently skip it otherwise — and count the copper
+Gerbers in the output before uploading. On KiCad 10 add `--check-zones` to the
+Gerber command; on 8/9 refill zones (B) and save first.

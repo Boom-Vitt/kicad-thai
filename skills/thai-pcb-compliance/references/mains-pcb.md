@@ -25,8 +25,25 @@ applies to the product (62368-1 for AV/ICT, 60335-1 for household appliances,
 which has its own tables) and with the test lab. Values with altitude,
 pollution degree 3, or working voltage above 250 V are different.
 
-`kicad-check/assets/rules/mains-220v-addon.kicad_dru` enforces these numbers
-in KiCad 9+ DRC (clearance + creepage) for a net class named `Mains`.
+KiCad 9+ DRC can enforce these numbers. Put the mains nets in a net class
+named `Mains` and append these rules to `<project>.kicad_dru` (a fab preset
+from kicad-check, or a new file starting with `(version 1)`). The same rules
+ship as `kicad-check/assets/rules/mains-220v-addon.kicad_dru`.
+
+```
+(rule "Mains to low voltage: reinforced clearance"
+	(constraint clearance (min 3.0mm))
+	(condition "A.hasNetclass('Mains') && !B.hasNetclass('Mains')"))
+(rule "Mains to low voltage: reinforced creepage"
+	(constraint creepage (min 5.0mm))
+	(condition "A.hasNetclass('Mains') && !B.hasNetclass('Mains')"))
+(rule "Between mains conductors (L-N): basic clearance"
+	(constraint clearance (min 1.5mm))
+	(condition "A.hasNetclass('Mains') && B.hasNetclass('Mains') && A.Net != B.Net"))
+(rule "Between mains conductors (L-N): basic creepage"
+	(constraint creepage (min 2.5mm))
+	(condition "A.hasNetclass('Mains') && B.hasNetclass('Mains') && A.Net != B.Net"))
+```
 
 ## Layout rules
 

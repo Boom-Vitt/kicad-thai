@@ -44,8 +44,9 @@ Read [references/mains-pcb.md](references/mains-pcb.md) for definitions,
 starting values and layout rules. In KiCad 9+:
 
 1. Put every mains net in a net class named `Mains`.
-2. Append the add-on rules to the project's rules file:
-   `tail -n +2 "<kicad-check>/assets/rules/mains-220v-addon.kicad_dru" >> <project>.kicad_dru`
+2. Append the mains rules to the project's rules file: from the kicad-check
+   skill, `tail -n +2 "<kicad-check>/assets/rules/mains-220v-addon.kicad_dru" >> <project>.kicad_dru`,
+   or copy the rule block from references/mains-pcb.md.
 3. Run **kicad-check**; `clearance` and `creepage` violations on mains nets are blocking.
 
 KiCad 8 has no creepage check: measure creepage by hand (measure tool along
