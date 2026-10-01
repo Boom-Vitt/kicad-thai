@@ -93,12 +93,38 @@ def must(cli, args):
 def copper_layers(pcb_text):
     """Copper layers from the board's layer table, ordered F.Cu, In1..InN, B.Cu.
 
-    Layer-table rows look like `(0 "F.Cu" signal)`; pad layer lists have no
-    leading number, so they don't match.
+    Returns (canonical, user_name_or_None) pairs. Layer-table rows look like
+    `(0 "F.Cu" signal "top_layer")`; pad layer lists have no leading number.
     """
-    names = set(re.findall(r'\(\s*\d+\s+"((?:F|B|In\d+)\.Cu)"', pcb_text))
+    rows = re.findall(r'\(\s*\d+\s+"((?:F|B|In\d+)\.Cu)"\s+\w+(?:\s+"([^"]*)")?\s*\)', pcb_text)
+    names = dict(rows)
     inner = sorted((n for n in names if n.startswith("In")), key=lambda n: int(n[2:-3]))
-    return [n for n in ("F.Cu",) if n in names] + inner + [n for n in ("B.Cu",) if n in names]
+    order = [n for n in ("F.Cu",) if n in names] + inner + [n for n in ("B.Cu",) if n in names]
+    return [(n, names[n] or None) for n in order]
+
+
+def layer_args(copper):
+    """kicad-cli 8/9 silently skips a renamed copper layer given by its canonical
+    name, so pass the user name too (plotting a layer twice just rewrites one file)."""
+    out = []
+    for canonical, user in copper:
+        out += [canonical] + ([user] if user and user != canonical else [])
+    return out
+
+
+def verify_gerbers(gdir, n_copper):
+    """Fail loudly rather than ship a fab zip that is missing copper or the outline."""
+    names = [f.name for f in Path(gdir).iterdir()]
+    cu = [n for n in names if re.search(r"\.(gtl|gbl|g\d+)$", n)]
+    problems = []
+    if len(cu) != n_copper:
+        problems.append(f"expected {n_copper} copper Gerbers, got {len(cu)}: {sorted(cu)}")
+    if not any(n.endswith(".gm1") for n in names):
+        problems.append("no board outline (Edge.Cuts .gm1) Gerber")
+    if not any(n.endswith(".drl") for n in names):
+        problems.append("no Excellon drill file")
+    if problems:
+        sys.exit("Gerber export incomplete, NOT safe to send to a fab:\n  " + "\n  ".join(problems))
 
 
 def export_gerbers(cli, pcb, layers, gdir, version):
@@ -247,7 +273,7 @@ def main():
 
     pcb_text = pcb.read_text(encoding="utf-8")
     cu = copper_layers(pcb_text)
-    layers = cu + ["F.Paste", "B.Paste", "F.SilkS", "B.SilkS", "F.Mask", "B.Mask", "Edge.Cuts"]
+    layers = layer_args(cu) + ["F.Paste", "B.Paste", "F.SilkS", "B.SilkS", "F.Mask", "B.Mask", "Edge.Cuts"]
     summary = {"kicad": f"{version[0]}.{version[1]}", "fab": a.fab, "copper_layers": len(cu), "files": [],
                "warnings": []}
 
@@ -255,6 +281,7 @@ def main():
         gdir = Path(tmp) / "gerbers"
         gdir.mkdir()
         export_gerbers(cli, pcb, layers, gdir, version)
+        verify_gerbers(gdir, len(cu))
         if version < (10, 0) and "(zone" in pcb_text:
             summary["warnings"].append("KiCad < 10 plots zones as last saved: refill zones (B) and save in KiCad first")
         gzip = out / f"{name}-gerbers.zip"
@@ -282,7 +309,12 @@ def main():
 
     if a.step:
         step = out / f"{name}.step"
-        must(cli, ["pcb", "export", "step", "-o", str(step), "--subst-models", "--force", str(pcb)])
+        code, log = run(cli, ["pcb", "export", "step", "-o", str(step), "--subst-models", "--force", str(pcb)])
+        if not step.exists():
+            sys.exit(f"STEP export failed (exit {code}):\n{log}")
+        missing = log.count("File not found")
+        if missing:  # KiCad 10 exits non-zero when 3D models are missing but still writes the board
+            summary["warnings"].append(f"STEP written without {missing} missing 3D models (install KiCad's 3D library)")
         summary["files"].append(str(step))
 
     print(json.dumps(summary, indent=2, ensure_ascii=False))

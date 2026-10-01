@@ -53,18 +53,42 @@ class ExportFab(unittest.TestCase):
         return [json.loads(line) for line in self.log.read_text().splitlines()]
 
     def test_copper_layers_from_layer_table_only(self):
-        mod = load(EXPORT)
-        self.assertEqual(mod.copper_layers((FIX / "demo.kicad_pcb").read_text()), ["F.Cu", "In1.Cu", "In2.Cu", "B.Cu"])
-        self.assertEqual(mod.copper_layers('(layers (0 "F.Cu" signal) (31 "B.Cu" signal))'), ["F.Cu", "B.Cu"])
-        # KiCad 10 renumbered layers (B.Cu=2, In1.Cu=4); names still drive the order
-        self.assertEqual(mod.copper_layers('(layers (0 "F.Cu" signal) (2 "B.Cu" signal) (4 "In1.Cu" signal))'),
+        cu = lambda text: [c for c, _ in load(EXPORT).copper_layers(text)]
+        self.assertEqual(cu((FIX / "demo.kicad_pcb").read_text()), ["F.Cu", "In1.Cu", "In2.Cu", "B.Cu"])
+        self.assertEqual(cu('(layers (0 "F.Cu" signal) (31 "B.Cu" signal))'), ["F.Cu", "B.Cu"])
+        # KiCad 9+ renumbered layers (B.Cu=2, In1.Cu=4); names still drive the order
+        self.assertEqual(cu('(layers (0 "F.Cu" signal) (2 "B.Cu" signal) (4 "In1.Cu" signal))'),
                          ["F.Cu", "In1.Cu", "B.Cu"])
+
+    def test_renamed_copper_layers_still_exported(self):
+        # KiCad's own pic_programmer demo names its copper "top_layer"/"bottom_layer";
+        # kicad-cli 8.0.9/9.0.9 silently dropped them when asked for F.Cu/B.Cu.
+        mod = load(EXPORT)
+        board = '(layers (0 "F.Cu" signal "top_layer") (2 "B.Cu" signal "bottom_layer") (5 "F.SilkS" user "F.Silkscreen"))'
+        self.assertEqual(mod.copper_layers(board), [("F.Cu", "top_layer"), ("B.Cu", "bottom_layer")])
+        self.assertEqual(mod.layer_args(mod.copper_layers(board)), ["F.Cu", "top_layer", "B.Cu", "bottom_layer"])
+        with tempfile.TemporaryDirectory() as t:
+            proj = Path(t) / "renamed.kicad_pcb"
+            proj.write_text((FIX / "demo.kicad_pcb").read_text().replace('(0 "F.Cu" signal)', '(0 "F.Cu" signal "top_layer")'))
+            r = run(EXPORT, proj, "-o", Path(t) / "fab", "--no-assembly")
+            self.assertEqual(r.returncode, 0, r.stderr)
+            names = zipfile.ZipFile(Path(t) / "fab" / "renamed-gerbers.zip").namelist()
+            self.assertIn("renamed-top_layer.gtl", names)
+
+    def test_missing_copper_fails_loudly(self):
+        mod = load(EXPORT)
+        with tempfile.TemporaryDirectory() as t:
+            for n in ("b-F_Cu.gtl", "b-Edge_Cuts.gm1", "b-PTH.drl"):
+                (Path(t) / n).write_text("x")
+            mod.verify_gerbers(t, 1)
+            with self.assertRaises(SystemExit):
+                mod.verify_gerbers(t, 2)
 
     def test_jlcpcb_package(self):
         s = self.export("--fab", "jlcpcb", "--rot", "SOT-23*=180", "--step")
         self.assertEqual(s["copper_layers"], 4)
         names = zipfile.ZipFile(self.out / "demo-gerbers.zip").namelist()
-        for want in ("demo-F_Cu.gbr", "demo-In2_Cu.gbr", "demo-B_Cu.gbr", "demo-Edge_Cuts.gbr", "demo.drl"):
+        for want in ("demo-F_Cu.gtl", "demo-In2_Cu.g2", "demo-B_Cu.gbl", "demo-Edge_Cuts.gm1", "demo.drl"):
             self.assertIn(want, names)
 
         bom = read_csv(self.out / "demo-bom-jlcpcb.csv")

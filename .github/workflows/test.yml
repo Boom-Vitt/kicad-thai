@@ -5,8 +5,8 @@ jobs:
   offline:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with: { python-version: "3.12" }
       - run: python tests/test_scripts.py
       - run: for f in .claude-plugin/*.json .codex-plugin/*.json .cursor-plugin/*.json .agents/plugins/*.json gemini-extension.json; do python -m json.tool "$f" > /dev/null; done
@@ -19,7 +19,7 @@ jobs:
       matrix:
         kicad: ["8.0", "9.0", "10.0"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: KiCad demo projects for this version
         run: |
           git clone -q --depth 1 --filter=blob:none --sparse -b ${{ matrix.kicad }} https://gitlab.com/kicad/code/kicad.git demos-src
@@ -40,7 +40,7 @@ jobs:
         run: |
           sudo apt-get install -y -qq gerbv > /dev/null
           gerbv -x png -D 600 -b '#0b3a2b' -f '#f4ecd8ff' -f '#e2b450ff' -o thai-silkscreen-kicad${{ matrix.kicad }}.png thai/*Silkscreen* thai/*Edge_Cuts*
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: thai-silkscreen-kicad${{ matrix.kicad }}
           path: |

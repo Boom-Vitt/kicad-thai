@@ -30,7 +30,11 @@ def check(cond, msg):
         failures.append(msg)
 
 
-print(sh("kicad-cli", "version")[1].strip())
+VERSION = sh("kicad-cli", "version")[1].strip()
+MAJOR = int(VERSION.split(".")[0])
+print("kicad-cli", VERSION)
+if MAJOR < 9:  # creepage constraint is KiCad 9+
+    RULES = [r for r in RULES if "mains" not in r.name]
 for demo in map(Path, sys.argv[1:]):
     pro = next(demo.glob("*.kicad_pro"))
     print(f"\n== {pro.name}")
@@ -50,7 +54,8 @@ for demo in map(Path, sys.argv[1:]):
             check(any(n.endswith((".gtl", ".gbr")) for n in names), "copper gerber present")
             check(sum(n.endswith(".drl") for n in names) >= 1, "drill file present")
             check(any("Edge_Cuts" in n or n.endswith(".gm1") for n in names), "board outline present")
-            check(len([n for n in names if "_Cu." in n]) == s["copper_layers"], "one gerber per copper layer")
+            cu = [n for n in names if re.search(r"\.(gtl|gbl|g\d+)$", n)]
+            check(len(cu) == s["copper_layers"], f"one gerber per copper layer {cu}")
             bom = list(csv.reader(open(out / f"{pro.stem}-bom-jlcpcb.csv", encoding="utf-8")))
             check(bom[0] == ["Comment", "Designator", "Footprint", "LCSC Part #"], "JLC BOM header")
             check(len(bom) > 3 and all(len(r) == 4 for r in bom), f"BOM rows well-formed ({len(bom) - 1} lines)")
@@ -68,16 +73,27 @@ for demo in map(Path, sys.argv[1:]):
             base = c["errors"] + c["warnings"]
             print(f"  checks: {c['errors']} errors, {c['warnings']} warnings, types={[t['type'] for t in c['by_type']][:8]}")
 
+        # negative control: what does kicad-cli do with a broken rules file?
+        dru = pro.with_suffix(".kicad_dru")
+        dru.write_text('(version 1)\n(rule "bad" (constraint no_such_constraint (min 1mm)))\n')
+        code, so, se = sh("kicad-cli", "pcb", "drc", "--format", "json", "-o", Path(t) / "bad.json", pro.with_suffix(".kicad_pcb"))
+        bad_out = (so + se).strip()
+        print(f"  broken rules -> exit {code}, output {bad_out[-300:]!r}, report written: {(Path(t) / 'bad.json').exists()}")
+        dru.unlink()
+
         for rules in RULES:
             dru = pro.with_suffix(".kicad_dru")
             shutil.copy(rules, dru)
-            code, so, se = sh("kicad-cli", "pcb", "drc", "--format", "json", "-o", Path(t) / "r.json", pro)
-            print(f"    raw kicad-cli output: {(so + se).strip()[-400:]!r}")
+            code, so, se = sh("kicad-cli", "pcb", "drc", "--format", "json", "-o", Path(t) / "r.json", pro.with_suffix(".kicad_pcb"))
+            raw = (so + se).strip()
+            print(f"    raw kicad-cli output: {raw[-300:]!r}")
+            check(code == 0 and "rule" not in raw.lower() and "error" not in raw.lower(), f"{rules.name}: kicad-cli accepts the rules")
             code, so, se = sh(sys.executable, CHECKS, pro, "--json")
             c = json.loads(so) if code in (0, 1) else {}
             check(code in (0, 1), f"{rules.name} loads ({se.strip()[-200:]})")
             if c:
                 print(f"    {rules.name}: {c['errors']} errors, {c['warnings']} warnings; notes={c['notes'][-1:]}")
+                print("      top:", [(x["type"], x["count"], x["description"][:90]) for x in c["by_type"][:4]])
                 bad = [t for t in c["by_type"] if t["type"] in ("assertion_failure", "generic_error")]
                 check(not bad, f"{rules.name} produced no rule errors {bad[:1]}")
             dru.unlink()
