@@ -1,14 +1,16 @@
 (version 1)
 # PCBWay standard FR-4 process: hard manufacturing limits.
 # Source: https://www.pcbway.com/capabilities.html (checked 2026-10-02).
-# Install as <project>.kicad_dru. Also set Board Setup > Constraints:
+# Copper clearance and copper-to-edge minimums are NOT custom rules here on
+# purpose: a custom rule overrides net-class clearances (e.g. a 3 mm "Mains"
+# class would silently drop to the fab minimum). Set them in Board Setup >
+# Constraints instead; that acts as a floor under every net class.
+# Install as <project>.kicad_dru and set Board Setup > Constraints:
 #   min clearance 0.1, min track 0.1, min hole 0.15, min annular width 0.15, copper to edge 0.25.
 # Holes under 0.2 mm cost extra; 0.3 mm via holes are the cheap default.
 
 (rule "PCBWay track width"
 	(constraint track_width (min 0.1mm)))
-(rule "PCBWay copper clearance"
-	(constraint clearance (min 0.1mm)))
 (rule "PCBWay drill size"
 	(constraint hole_size (min 0.15mm) (max 6.0mm)))
 (rule "PCBWay annular ring"
@@ -18,8 +20,6 @@
 (rule "PCBWay component hole to hole"
 	(constraint hole_to_hole (min 0.41mm))
 	(condition "A.Type == 'Pad' && B.Type == 'Pad'"))
-(rule "PCBWay copper to milled edge"
-	(constraint edge_clearance (min 0.25mm)))
 (rule "PCBWay silkscreen text"
 	(constraint text_thickness (min 0.15mm))
 	(constraint text_height (min 0.8mm))

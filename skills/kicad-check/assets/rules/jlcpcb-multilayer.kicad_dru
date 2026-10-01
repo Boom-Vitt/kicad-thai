@@ -1,7 +1,11 @@
 (version 1)
 # JLCPCB standard multilayer (4-20 layers) FR-4, 1 oz outer copper: hard manufacturing limits.
 # Source: https://jlcpcb.com/capabilities/pcb-capabilities (checked 2026-10-02).
-# Install as <project>.kicad_dru. Also set Board Setup > Constraints:
+# Copper clearance and copper-to-edge minimums are NOT custom rules here on
+# purpose: a custom rule overrides net-class clearances (e.g. a 3 mm "Mains"
+# class would silently drop to the fab minimum). Set them in Board Setup >
+# Constraints instead; that acts as a floor under every net class.
+# Install as <project>.kicad_dru and set Board Setup > Constraints:
 #   min clearance 0.09, min track 0.09, min via diameter 0.25, min hole 0.15,
 #   min annular width 0.05, copper to edge 0.2 (0.4 if V-scored).
 # Cheaper / safer than the limits: track/space >= 0.15, via 0.3 hole / 0.5-0.6 dia
@@ -9,11 +13,6 @@
 
 (rule "JLC track width"
 	(constraint track_width (min 0.09mm)))
-(rule "JLC copper clearance"
-	(constraint clearance (min 0.09mm)))
-(rule "JLC SMD pad to pad"
-	(constraint clearance (min 0.15mm))
-	(condition "A.Type == 'Pad' && B.Type == 'Pad'"))
 (rule "JLC drill size"
 	(constraint hole_size (min 0.15mm) (max 6.3mm)))
 (rule "JLC NPTH size"
@@ -39,11 +38,10 @@
 (rule "JLC pad hole to pad hole"
 	(constraint hole_to_hole (min 0.45mm))
 	(condition "A.Type == 'Pad' && B.Type == 'Pad'"))
-(rule "JLC copper to board edge"
-	(constraint edge_clearance (min 0.2mm)))
 (rule "JLC silkscreen text"
 	(constraint text_thickness (min 0.15mm))
 	(constraint text_height (min 1mm))
 	(layer "?.Silkscreen"))
 (rule "JLC silk to pad"
-	(constraint silk_clearance (min 0.15mm)))
+	(constraint silk_clearance (min 0.15mm))
+	(condition "A.Type == 'Pad' || B.Type == 'Pad'"))

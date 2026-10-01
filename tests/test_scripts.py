@@ -128,6 +128,39 @@ class ExportFab(unittest.TestCase):
         self.assertEqual([Path(f).name for f in s["files"]], ["demo-gerbers.zip"])
         self.assertFalse(any(c[:2] == ["sch", "export"] for c in self.calls()))
 
+    def test_rot_fix_is_mirrored_on_bottom(self):
+        self.export("--rot", "SOIC*=90")
+        cpl = {r[0]: r for r in read_csv(self.out / "demo-cpl-jlcpcb.csv")[1:]}
+        self.assertEqual((cpl["U1"][5], cpl["U1"][6]), ("270", "Bottom"))  # 0 - 90 on the bottom side
+
+    def test_bom_vs_board_cross_check(self):
+        s = self.export()
+        self.assertTrue(any("not on the board" in w and "C10" in w for w in s["warnings"]), s["warnings"])
+        self.assertFalse(any("footprint differs" in w for w in s["warnings"]))
+        rows = [{"refs": ["R1"], "footprint": "Resistor_SMD:R_0805_2012Metric"}]
+        self.assertIn("footprint differs", load(EXPORT).cross_check(rows, [{"Ref": "R1", "Package": "R_0603_1608Metric"}])[0])
+
+    def test_unannotated_parts_refused(self):
+        with tempfile.TemporaryDirectory() as t:
+            (Path(t) / "bom.csv").write_text('"Reference","Value","Footprint"\n"R?","10k","R_0603"\n')
+            fake_fix = FIX / "bom-unannotated.csv"
+            fake_fix.write_text((Path(t) / "bom.csv").read_text())
+            try:
+                r = run(EXPORT, FIX / "demo.kicad_pro", "-o", self.out, FAKE_BOM="bom-unannotated.csv")
+            finally:
+                fake_fix.unlink()
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("Unannotated", r.stderr)
+
+    def test_thai_text_warning_on_kicad8(self):
+        with tempfile.TemporaryDirectory() as t:
+            board = Path(t) / "th.kicad_pcb"
+            board.write_text((FIX / "demo.kicad_pcb").read_text().replace("(footprint", '(gr_text "ลายวงจร" (at 1 1 0) (layer "F.SilkS"))\n\t(footprint', 1))
+            r8 = run(EXPORT, board, "-o", Path(t) / "f8", "--no-assembly", FAKE_VERSION="8.0.9")
+            r9 = run(EXPORT, board, "-o", Path(t) / "f9", "--no-assembly", FAKE_VERSION="9.0.9")
+        self.assertTrue(any("drops Thai vowels" in w for w in json.loads(r8.stdout)["warnings"]))
+        self.assertFalse(any("drops Thai vowels" in w for w in json.loads(r9.stdout)["warnings"]))
+
     def test_bad_rot_spec(self):
         r = run(EXPORT, FIX / "demo.kicad_pro", "-o", self.out, "--rot", "SOT-23")
         self.assertNotEqual(r.returncode, 0)
@@ -152,6 +185,20 @@ class RunChecks(unittest.TestCase):
         self.assertIn("--schematic-parity", drc)
         self.assertIn("RESULT: FAIL (3 errors, 2 warnings)", r.stdout)
         self.assertIn("clearance x1", r.stdout)
+
+    def test_custom_rules_verified_or_rejected(self):
+        with tempfile.TemporaryDirectory() as t:
+            for f in ("demo.kicad_pcb", "demo.kicad_pro"):
+                (Path(t) / f).write_text((FIX / f).read_text())
+            dru = Path(t) / "demo.kicad_dru"
+            dru.write_text("(version 1)\n(rule ok (constraint track_width (min 0.1mm)))\n")
+            ok = run(CHECKS, Path(t) / "demo.kicad_pro", "--json", FAKE_DRC="drc-clean.json")
+            dru.write_text("(version 1)\n(rule bad (constraint no_such_constraint (min 1mm)))\n")
+            bad = run(CHECKS, Path(t) / "demo.kicad_pro", "--json", FAKE_DRC="drc-clean.json")
+        self.assertEqual(ok.returncode, 0, ok.stderr)
+        self.assertIn("loaded, verified", " ".join(json.loads(ok.stdout)["notes"]))
+        self.assertEqual(bad.returncode, 2)
+        self.assertIn("did NOT load", bad.stderr)
 
     def test_clean_passes(self):
         r = run(CHECKS, FIX, FAKE_ERC="erc-clean.json", FAKE_DRC="drc-clean.json")
@@ -195,6 +242,14 @@ class Repo(unittest.TestCase):
         addon = (ROOT / "skills/kicad-check/assets/rules/mains-220v-addon.kicad_dru").read_text()
         doc = (ROOT / "skills/thai-pcb-compliance/references/mains-pcb.md").read_text()
         self.assertIn("(rule" + addon.split("\n(rule", 1)[1].rstrip(), doc)
+
+    def test_fab_presets_never_override_netclass_clearance(self):
+        # a custom clearance/edge rule beats net classes: a 3 mm Mains class would drop to the fab minimum
+        for p in (ROOT / "skills/kicad-check/assets/rules").glob("*.kicad_dru"):
+            if "mains" in p.name:
+                continue
+            body = "\n".join(l for l in p.read_text().splitlines() if not l.lstrip().startswith("#"))
+            self.assertNotRegex(body, r"\(constraint (clearance|edge_clearance) ", p.name)
 
     def test_dru_presets_parse(self):
         presets = sorted((ROOT / "skills/kicad-check/assets/rules").glob("*.kicad_dru"))

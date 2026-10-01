@@ -1,6 +1,6 @@
 ---
 name: thai-pcb-compliance
-description: Thai regulatory and safety checklist for electronic products and PCBs — TISI / สมอ. mandatory standards (มอก. 62368, มอก. 60335, plug มอก. 166), NBTC / กสทช. radio rules (WiFi/BLE 2.4 GHz, LoRa 920-925 MHz, SDoC, Class A/B), 220 V mains creepage and clearance in KiCad, RoHS/WEEE status and Thai test labs (EEI, PTEC). Use when a board or product will be sold, imported or installed in Thailand, has mains (ไฟบ้าน 220V) or a radio, or the user asks ต้องขอ มอก. ไหม, ขออนุญาต กสทช., ขาย IoT ในไทย, SDoC, ระยะ creepage, ปลอดภัยไหม, ส่งออกยุโรป RoHS — even if they only describe the product.
+description: Thai regulatory and safety checklist for electronic products and PCBs — TISI / สมอ. mandatory standards (มอก. 62368, มอก. 60335, plug มอก. 166), NBTC / กสทช. radio rules (WiFi/BLE 2.4 GHz, LoRa 920-925 MHz, SDoC, Class A/B), 220 V mains creepage and clearance in KiCad, RoHS/WEEE status and Thai test labs (EEI, PTEC). Use when a board or product will be sold, imported or installed in Thailand, has mains (ไฟบ้าน 220V) or a radio, or the user asks ต้องขอ มอก. ไหม, ขออนุญาต กสทช., ขาย IoT ในไทย, SDoC, ระยะ creepage, ไฟบ้านบนบอร์ดต้องห่างเท่าไหร่, ส่งออกยุโรป RoHS — even if they only describe the product.
 ---
 
 # Thai compliance for electronics (มอก. / กสทช. / mains safety)
@@ -44,7 +44,8 @@ Key facts (sources in references/standards.md):
 Read [references/mains-pcb.md](references/mains-pcb.md) for definitions,
 starting values and layout rules. In KiCad 9+:
 
-1. Put every mains net in a net class named `Mains`.
+1. Put every mains net in a net class named `Mains`; nets above 250 V (rectified
+   DC bus ~325 V, switcher primary) in `Mains_HV` (6.4 mm reinforced creepage).
 2. Append the mains rules to the project's rules file: from the kicad-check
    skill, `tail -n +2 "<kicad-check>/assets/rules/mains-220v-addon.kicad_dru" >> <project>.kicad_dru`,
    or copy the rule block from references/mains-pcb.md.

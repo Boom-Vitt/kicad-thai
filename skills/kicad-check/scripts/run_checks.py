@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run KiCad ERC + DRC headlessly and print a compact, grouped summary. Stdlib only, any OS.
 
-    python3 run_checks.py board.kicad_pro            # human summary, exit 1 on any error
+    python3 run_checks.py board.kicad_pro            # human summary, exit 1 on any error, 2 if rules didn't load
     python3 run_checks.py . --json                   # machine-readable summary
     python3 run_checks.py board.kicad_pcb --max 30   # show more examples per type
 
@@ -36,7 +36,8 @@ def find_kicad_cli(explicit=None):
     ]
     # Windows installs per major version: C:\Program Files\KiCad\9.0\bin\kicad-cli.exe
     for root in (os.environ.get("ProgramFiles", r"C:\Program Files"), os.path.expanduser(r"~\AppData\Local\Programs")):
-        paths += sorted(glob.glob(os.path.join(root, "KiCad", "*", "bin", "kicad-cli.exe")), reverse=True)
+        found = glob.glob(os.path.join(root, "KiCad", "*", "bin", "kicad-cli.exe"))
+        paths += sorted(found, key=lambda p: [int(n) for n in re.findall(r"\d+", Path(p).parts[-3])], reverse=True)
     for p in paths:
         if os.path.isfile(p):
             return [p]
@@ -49,14 +50,14 @@ def find_kicad_cli(explicit=None):
 
 
 def kicad_version(cli):
-    out = subprocess.run(cli + ["version"], capture_output=True, text=True).stdout
+    out = subprocess.run(cli + ["version"], capture_output=True, encoding="utf-8", errors="replace").stdout
     m = re.search(r"(\d+)\.(\d+)", out)
     return (int(m.group(1)), int(m.group(2))) if m else (0, 0)
 
 
 def run(cli, args):
     """Run kicad-cli; return (returncode, combined output). Never raises on non-zero."""
-    r = subprocess.run(cli + args, capture_output=True, text=True)
+    r = subprocess.run(cli + args, capture_output=True, encoding="utf-8", errors="replace")  # not the locale codec (cp874 on Thai Windows)
     return r.returncode, (r.stdout + r.stderr).strip()
 
 
@@ -108,7 +109,31 @@ def summarize(violations):
     return sev, by_type
 
 
+# An absurd minimum that shows up in the violation text; KiCad doesn't always name the rule.
+CANARY = """
+(rule "kicad_thai_canary" (constraint track_width (min 987.654mm)))
+(rule "kicad_thai_canary" (constraint hole_size (min 987.654mm)))
+"""
+
+
+def rules_loaded(cli, pcb, dru, work):
+    """KiCad silently ignores a .kicad_dru it can't parse (DRC then passes on built-in rules only).
+    Prove the file loads: DRC a copy of the board with an always-failing canary rule appended.
+    Returns True / False, or None when the board has no tracks or holes for the canary to hit."""
+    work.mkdir()
+    for f in (pcb, pcb.with_suffix(".kicad_pro")):
+        if f.exists():
+            shutil.copy(f, work / f.name)
+    (work / dru.name).write_text(dru.read_text(encoding="utf-8") + CANARY, encoding="utf-8")
+    rep = work / "canary.json"
+    run(cli, ["pcb", "drc", "--format", "json", "-o", str(rep), str(work / pcb.name)])
+    if rep.exists() and "987.654" in rep.read_text(encoding="utf-8"):
+        return True
+    return False if re.search(r"\((segment|via|drill) ", pcb.read_text(encoding="utf-8")) else None
+
+
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")  # Thai paths/messages on Windows consoles
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("project", help="project dir, .kicad_pro, .kicad_pcb or .kicad_sch")
     ap.add_argument("--json", action="store_true", help="print a JSON summary instead of text")
@@ -119,7 +144,10 @@ def main():
     pcb, sch, name = resolve_project(a.project)
     cli = find_kicad_cli(a.kicad_cli)
     version = kicad_version(cli)
-    keep = Path(tempfile.mkdtemp(prefix=f"kicad-checks-{name}-"))
+    base = Path.home() / ".cache" if cli[0] == "flatpak" else None  # Flatpak can't see the host's /tmp
+    if base:
+        base.mkdir(exist_ok=True)
+    keep = Path(tempfile.mkdtemp(prefix=f"kicad-checks-{name}-", dir=base))
     violations, reports, notes = [], {}, []
 
     if sch:
@@ -148,8 +176,20 @@ def main():
         reports["drc"] = str(rep)
         violations += load_violations(rep, "drc")
         dru = pcb.with_suffix(".kicad_dru")
-        notes.append(f"custom rules: {dru.name}" if dru.exists() else
-                     "no .kicad_dru custom rules: DRC used only Board Setup constraints")
+        if not dru.exists():
+            notes.append("no .kicad_dru custom rules: DRC used only Board Setup constraints")
+        else:
+            loaded = rules_loaded(cli, pcb, dru, keep / "rules-check")
+            if loaded is False:
+                why = ""
+                text = dru.read_text(encoding="utf-8")
+                if version < (9, 0) and ("creepage" in text or "hasNetclass" in text):
+                    why = " It uses creepage/hasNetclass(), which need KiCad 9+."
+                print(f"{dru.name} did NOT load: KiCad ignored it, so DRC would pass on built-in rules only.{why} "
+                      "Open Board Setup > Custom Rules > Check Rule Syntax to find the error.", file=sys.stderr)
+                sys.exit(2)
+            notes.append(f"custom rules: {dru.name} (loaded, verified)" if loaded else
+                         f"custom rules: {dru.name} (could not verify it loaded: board has no tracks or holes)")
     else:
         notes.append("no board found: DRC skipped")
 

@@ -41,7 +41,8 @@ def find_kicad_cli(explicit=None):
     ]
     # Windows installs per major version: C:\Program Files\KiCad\9.0\bin\kicad-cli.exe
     for root in (os.environ.get("ProgramFiles", r"C:\Program Files"), os.path.expanduser(r"~\AppData\Local\Programs")):
-        paths += sorted(glob.glob(os.path.join(root, "KiCad", "*", "bin", "kicad-cli.exe")), reverse=True)
+        found = glob.glob(os.path.join(root, "KiCad", "*", "bin", "kicad-cli.exe"))
+        paths += sorted(found, key=lambda p: [int(n) for n in re.findall(r"\d+", Path(p).parts[-3])], reverse=True)
     for p in paths:
         if os.path.isfile(p):
             return [p]
@@ -54,14 +55,14 @@ def find_kicad_cli(explicit=None):
 
 
 def kicad_version(cli):
-    out = subprocess.run(cli + ["version"], capture_output=True, text=True).stdout
+    out = subprocess.run(cli + ["version"], capture_output=True, encoding="utf-8", errors="replace").stdout
     m = re.search(r"(\d+)\.(\d+)", out)
     return (int(m.group(1)), int(m.group(2))) if m else (0, 0)
 
 
 def run(cli, args):
     """Run kicad-cli; return (returncode, combined output). Never raises on non-zero."""
-    r = subprocess.run(cli + args, capture_output=True, text=True)
+    r = subprocess.run(cli + args, capture_output=True, encoding="utf-8", errors="replace")  # not the locale codec (cp874 on Thai Windows)
     return r.returncode, (r.stdout + r.stderr).strip()
 
 
@@ -166,6 +167,8 @@ def read_symbols(cli, sch, tmp):
     with open(out, newline="", encoding="utf-8-sig") as f:
         for row in csv.DictReader(f):
             for ref in re.split(r"[,\s]+", row.get("Reference", "").strip()):
+                if ref.endswith("?"):
+                    sys.exit(f"Unannotated symbol {ref}: annotate the schematic first (Tools > Annotate Schematic).")
                 if not ref or ref.startswith("#") or ref in seen or row.get("${DNP}", "").strip():
                     continue
                 seen.add(ref)
@@ -222,13 +225,10 @@ def parse_rot_rules(specs):
     return rules
 
 
-def read_positions(cli, pcb, tmp, version):
+def read_positions(cli, pcb, tmp):
     out = Path(tmp) / "raw-pos.csv"
-    args = ["pcb", "export", "pos", "-o", str(out), "--side", "both",
-            "--format", "csv", "--units", "mm"]
-    if version >= (8, 0):
-        args.append("--exclude-dnp")
-    must(cli, args + [str(pcb)])
+    must(cli, ["pcb", "export", "pos", "-o", str(out), "--side", "both",
+               "--format", "csv", "--units", "mm", "--exclude-dnp", str(pcb)])
     with open(out, newline="", encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
@@ -239,17 +239,33 @@ def write_cpl(positions, rot_rules, dest):
         w = csv.writer(f)
         w.writerow(["Designator", "Val", "Package", "Mid X", "Mid Y", "Rotation", "Layer"])
         for p in positions:
+            top = p["Side"].lower().startswith("top")
             rot = float(p["Rot"])
             for pattern, deg in rot_rules:
                 if fnmatch.fnmatch(p["Package"], pattern):
-                    rot += deg
+                    rot += deg if top else -deg  # bottom parts are seen mirrored from the top
                     break
             rot %= 360
             w.writerow([p["Ref"], p["Val"], p["Package"], f'{float(p["PosX"]):.4f}', f'{float(p["PosY"]):.4f}',
-                        f"{rot:g}", "Top" if p["Side"].lower().startswith("top") else "Bottom"])
+                        f"{rot:g}", "Top" if top else "Bottom"])
+
+
+def cross_check(rows, positions):
+    """BOM comes from the schematic, CPL from the board: catch the two being out of sync."""
+    placed = {p["Ref"]: p["Package"] for p in positions}
+    warnings = []
+    unplaced = [ref for r in rows for ref in r["refs"] if ref not in placed]
+    if unplaced:
+        warnings.append(f"in the BOM but not on the board (update PCB from schematic, F8): {unplaced[:10]}")
+    differ = [ref for r in rows for ref in r["refs"] if ref in placed and r["footprint"]
+              and strip_lib(r["footprint"]) != placed[ref]]
+    if differ:
+        warnings.append(f"footprint differs between schematic and board: {differ[:10]}")
+    return warnings
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")  # Thai paths in the JSON on Windows consoles
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("project", help="project dir, .kicad_pro or .kicad_pcb")
     ap.add_argument("--fab", choices=["jlcpcb", "pcbway", "generic"], default="jlcpcb")
@@ -257,7 +273,7 @@ def main():
     ap.add_argument("--no-assembly", action="store_true", help="bare PCB only: skip BOM and CPL")
     ap.add_argument("--step", action="store_true", help="also export a STEP 3D model")
     ap.add_argument("--rot", action="append", default=[], metavar="PATTERN=DEG",
-                    help="add DEG to CPL rotation for packages matching glob PATTERN (first match wins)")
+                    help="add DEG to CPL rotation (subtracted on the bottom side) for packages matching glob PATTERN; first match wins")
     ap.add_argument("--kicad-cli", help="path to kicad-cli (else KICAD_CLI env, PATH, standard install dirs)")
     a = ap.parse_args()
 
@@ -267,7 +283,7 @@ def main():
     cli = find_kicad_cli(a.kicad_cli)
     version = kicad_version(cli)
     if version < (8, 0):
-        print(f"warning: kicad-cli {version[0]}.{version[1]} detected; this script targets KiCad 8+", file=sys.stderr)
+        sys.exit(f"kicad-cli {version[0]}.{version[1]} found; KiCad 8 or newer is required")
     out = Path(a.out) if os.path.isabs(a.out) else pcb.parent / a.out
     out.mkdir(parents=True, exist_ok=True)
 
@@ -276,8 +292,12 @@ def main():
     layers = layer_args(cu) + ["F.Paste", "B.Paste", "F.SilkS", "B.SilkS", "F.Mask", "B.Mask", "Edge.Cuts"]
     summary = {"kicad": f"{version[0]}.{version[1]}", "fab": a.fab, "copper_layers": len(cu), "files": [],
                "warnings": []}
+    if version < (9, 0) and re.search("[\u0e00-\u0e7f]", pcb_text):
+        summary["warnings"].append("Thai text on the board: KiCad 8 drops Thai vowels and tone marks when plotting; "
+                                   "export with KiCad 9.0.9+ / 10.0.6+ (verified) and check the silkscreen Gerber")
 
-    with tempfile.TemporaryDirectory() as tmp:
+    # Temp dir inside the output dir: a Flatpak kicad-cli can't see the host's /tmp.
+    with tempfile.TemporaryDirectory(dir=out) as tmp:
         gdir = Path(tmp) / "gerbers"
         gdir.mkdir()
         export_gerbers(cli, pcb, layers, gdir, version)
@@ -290,6 +310,7 @@ def main():
         summary["files"].append(str(gzip))
 
         if not a.no_assembly:
+            positions = read_positions(cli, pcb, tmp)
             if sch:
                 rows = group_parts(read_symbols(cli, sch, tmp))
                 bom = out / f"{name}-bom-{a.fab}.csv"
@@ -297,18 +318,20 @@ def main():
                 summary["files"].append(str(bom))
                 summary["bom_lines"] = len(rows)
                 summary["placements"] = sum(len(r["refs"]) for r in rows)
-                if a.fab == "jlcpcb":
-                    missing = [",".join(r["refs"]) for r in rows if not r["lcsc"]]
-                    if missing:
-                        summary["warnings"].append(f"{len(missing)} BOM lines have no LCSC part number: {missing[:10]}")
+                key, label = ("lcsc", "LCSC part number") if a.fab == "jlcpcb" else ("mpn", "MPN")
+                missing = [",".join(r["refs"]) for r in rows if not r[key]]
+                if missing and a.fab != "generic":
+                    summary["warnings"].append(f"{len(missing)} BOM lines have no {label}: {missing[:10]}")
+                summary["warnings"] += cross_check(rows, positions)
             else:
                 summary["warnings"].append(f"no {name}.kicad_sch next to the board: BOM skipped")
             cpl = out / f"{name}-cpl-{a.fab}.csv"
-            write_cpl(read_positions(cli, pcb, tmp, version), parse_rot_rules(a.rot), cpl)
+            write_cpl(positions, parse_rot_rules(a.rot), cpl)
             summary["files"].append(str(cpl))
 
     if a.step:
         step = out / f"{name}.step"
+        step.unlink(missing_ok=True)  # never report a stale file from an earlier run
         code, log = run(cli, ["pcb", "export", "step", "-o", str(step), "--subst-models", "--force", str(pcb)])
         if not step.exists():
             sys.exit(f"STEP export failed (exit {code}):\n{log}")

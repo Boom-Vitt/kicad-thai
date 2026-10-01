@@ -23,7 +23,7 @@ and what it says it does. Prices, MOQs and lead times: ask the supplier.
 | Prototypes, 5–100 boards | JLCPCB, PCBWay (China, courier to TH in ~1 week + customs). Use kicad-fab-export. |
 | Small-batch PCBA with a Thai contact | Gravitech (Pathum Thani); PCBCart has a factory in Asia Industrial Estate, Samut Prakan (1–10,000+ pcs) — https://www.pcbcart.com/ |
 | Volume bare boards made in Thailand | KCE Electronics (Lat Krabang, automotive PCBs, since 1982) and the new BOI-promoted plants: Zhen Ding (Kabin Buri, Prachinburi), Dynamic Electronics, Taihua, Thai Kun Circuit (304 Industrial Park, Prachinburi), WUS Printed Circuit (Rojana, Ayutthaya), Gold Circuit Electronics. These serve OEM volumes, not hobby orders. |
-| EMS / contract manufacturing | Cal-Comp, Hana Microelectronics (Lamphun, Ayutthaya), SVI, Benchmark, Fabrinet (Chonburi), Delta Electronics (Thailand) |
+| EMS / contract manufacturing | Cal-Comp, Hana Microelectronics (Lamphun, Ayutthaya), SVI, Benchmark ([Circuits Assembly, 2013 ranking](https://circuitsassembly.com/ca/editorial/menu-news/22979-svis-net-income-up-despite-sales-dip.html)), Fabrinet (Chonburi), Delta Electronics (Thailand) ([BOI PR 15/2569](https://www.boi.go.th/upload/content/PR15_2569EN.pdf)) |
 
 We could not verify a purely Thai quick-turn bare-board fab for hobby
 quantities. If the user knows one, use the `thai-conservative` DRC preset and

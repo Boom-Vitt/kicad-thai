@@ -1,6 +1,6 @@
 ---
 name: kicad-pcb
-description: End-to-end KiCad 8/9/10 PCB design workflow for Thai engineers, students and factories — requirements, schematic, footprints, board setup, layout, checks and handoff to a fab — plus Thai text on the silkscreen. Use whenever the user works on a KiCad project (.kicad_pro, .kicad_sch, .kicad_pcb), asks to design, lay out or review a circuit board, or writes in Thai about ออกแบบ PCB, วาดวงจร, ลากลาย, ลายวงจร, แผ่นวงจรพิมพ์, ทำบอร์ด, ฟุตปริ้น, ตัวหนังสือไทยบนบอร์ด, even if they never say "KiCad". Routes to kicad-check (ERC/DRC/DFM), kicad-fab-export (Gerber/BOM/CPL), thai-pcb-compliance (มอก./กสทช./mains safety) and thai-pcb-sourcing (Thai fabs, parts, import VAT).
+description: End-to-end KiCad 8/9/10 PCB design workflow for Thai engineers, students and factories — requirements, schematic, footprints, board setup, layout, checks and handoff to a fab — plus Thai text on the silkscreen. Use whenever the user works on a KiCad project (.kicad_pro, .kicad_sch, .kicad_pcb), asks to design, lay out or review a circuit board, or writes in Thai about ออกแบบ PCB, วาดวงจร, ลากลาย, ลายวงจร, แผ่นปริ้น, ทำปริ้น, แผ่นวงจรพิมพ์, ทำบอร์ด, ฟุตปริ้น, ตัวหนังสือไทยบนบอร์ด, even if they never say "KiCad". Routes to kicad-check (ERC/DRC/DFM), kicad-fab-export (Gerber/BOM/CPL), thai-pcb-compliance (มอก./กสทช./mains safety) and thai-pcb-sourcing (Thai fabs, parts, import VAT).
 ---
 
 # KiCad PCB design (Thai industry)
@@ -97,8 +97,9 @@ regulator loops, RF) first → power → the rest → pour zones → silkscreen 
 
 ### Thai text on the silkscreen (ตัวหนังสือไทยบนบอร์ด)
 
-KiCad 7+ can use TrueType/OpenType fonts for text, which is what makes Thai
-possible. How to do it and what to check: [references/thai-silkscreen.md](references/thai-silkscreen.md).
+Needs a TrueType font **and KiCad 9+**: KiCad 8 silently drops every Thai
+vowel and tone mark from the Gerbers (verified). How to do it and what to
+check: [references/thai-silkscreen.md](references/thai-silkscreen.md).
 
 ### Checks and handoff
 

@@ -1,8 +1,17 @@
 # Thai text on the silkscreen (ตัวหนังสือไทยบน PCB)
 
-KiCad's built-in stroke font (Newstroke) has no Thai glyphs. Since KiCad 7,
-text can use any TrueType/OpenType font, shaped with HarfBuzz, which is what
-places Thai vowels and tone marks (สระบน/ล่าง, วรรณยุกต์) correctly.
+KiCad's built-in stroke font (Newstroke) has no Thai glyphs: Thai comes out
+as empty boxes. Since KiCad 7, text can use any TrueType/OpenType font, but
+**only KiCad 9+ plots Thai correctly** — tested in this repo's CI with Sarabun:
+
+| KiCad | `ผู้ใหญ่ ปั๊มน้ำ ที่นี่` on the silkscreen |
+|---|---|
+| 8.0.9 | **"ผใหญ ปมน ทน"** — every vowel above/below and every tone mark is dropped, silently |
+| 9.0.9 | correct |
+| 10.0.6 | correct |
+
+So: Thai silkscreen needs KiCad 9.0.9+ or 10.0.6+. `export_fab.py` warns when
+it sees Thai text on a board exported with KiCad 8.
 
 ## How
 
@@ -29,19 +38,21 @@ for a given text height. Fab minimums (JLCPCB: height ≥ 1.0 mm, line
 |---|---|---|
 | Minimum that stays legible | 1.5 mm | 0.2 mm |
 | Normal labels | 2.0 mm | 0.25 mm |
-| Warnings (อันตราย ไฟฟ้าแรงสูง) | ≥ 2.5 mm | 0.3 mm |
+| Warnings (อันตราย! ไฟฟ้า 220V) | ≥ 2.5 mm | 0.3 mm |
 
 ## Known issues
 
-- Use KiCad **≥ 9.0.7 or ≥ 10.0.6**: 9.0.x before 9.0.7 dropped combining
-  vowels for a complex script (Hindi, [#22402](https://gitlab.com/kicad/code/kicad/-/issues/22402));
+- KiCad 8: drops Thai combining marks (verified above). Related upstream fixes:
+  combining vowels for Hindi were fixed in 9.0.7 ([#22402](https://gitlab.com/kicad/code/kicad/-/issues/22402));
   10.0.5 failed to plot text in a non-embeddable outline font ([#25228](https://gitlab.com/kicad/code/kicad/-/issues/25228)).
+  9.0.0–9.0.6 were not tested; prefer 9.0.9.
 - Thai digits (๐–๙) need the font to contain them (Sarabun does).
 - If the font is missing on the exporting machine, KiCad falls back to
   another font: always check the Gerber, not the editor view.
 
-## Verified
+## How this was checked
 
-`tests/kicad/thai_silkscreen.kicad_pcb` is exported to Gerber with Sarabun
-on KiCad 8, 9 and 10 in this repo's CI, and the rendered PNGs are kept as
-build artifacts.
+`tests/kicad/thai_silkscreen.kicad_pcb` (Sarabun at 2.5/2.0/1.5/1.0 mm plus the
+stroke font) is plotted by KiCad 8.0.9, 9.0.9 and 10.0.6 in CI; the Gerbers
+are rendered to PNG and kept as build artifacts for a visual check. The table
+above is from looking at those renders (2026-10-02).

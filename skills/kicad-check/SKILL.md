@@ -1,6 +1,6 @@
 ---
 name: kicad-check
-description: Run KiCad ERC and DRC headlessly with kicad-cli, check the board against JLCPCB, PCBWay or conservative Thai-fab design-rule presets, explain every violation in Thai or English, and do a DFM/DFA design review before ordering. Use when the user asks to check, verify, review or "ตรวจ" a KiCad schematic or PCB — ตรวจ DRC, ตรวจ ERC, เช็กบอร์ดก่อนสั่งผลิต, บอร์ดนี้ผลิตได้ไหม, ลายชิดเกินไหม, design review, DFM — or pastes DRC/ERC errors, even if they don't name kicad-cli.
+description: Run KiCad ERC and DRC headlessly with kicad-cli, check the board against JLCPCB, PCBWay or conservative Thai-fab design-rule presets, explain every violation in Thai or English, and do a DFM/DFA design review before ordering. Use when the user asks to check, verify, review or "ตรวจ" a KiCad schematic or PCB — ตรวจ DRC, ตรวจ ERC, เช็กบอร์ด/เช็คบอร์ดก่อนสั่งผลิต, บอร์ดนี้ผลิตได้ไหม, ลายชิดเกินไหม, design review, DFM — or pastes DRC/ERC errors, even if they don't name kicad-cli.
 ---
 
 # KiCad checks: ERC, DRC, fab rules, design review
@@ -27,10 +27,14 @@ Install the preset as `<project>.kicad_dru` next to the `.kicad_pro`:
 cp -n "<skill>/assets/rules/jlcpcb-2layer.kicad_dru" "<project-dir>/<project>.kicad_dru"
 ```
 
-`-n` keeps an existing rules file; if one exists, show the user the diff and
-merge by hand — custom rules are the user's work. The presets also say which
-Board Setup → Constraints minimums to set; check those values in the
-`.kicad_pro` (`"rules"` section) and tell the user if they are looser than the fab.
+`-n` keeps an existing rules file (on Windows, copy only if the file doesn't exist); if one exists, show the user the diff and
+merge by hand — custom rules are the user's work.
+
+The presets deliberately contain **no copper `clearance` or `edge_clearance`
+rules**: a custom rule overrides net-class clearances, so a fab minimum of
+0.1 mm would silently beat a 3 mm `Mains` class. Set those two minimums in
+Board Setup → Constraints (each preset's header lists the numbers); check the
+`.kicad_pro` `"rules"` section and tell the user if they are looser than the fab.
 
 Fab capability numbers change; the preset headers carry the source URL and
 the date they were checked. Re-check the fab's page for anything near a limit.
@@ -44,6 +48,9 @@ python3 "<skill>/scripts/run_checks.py" path/to/project.kicad_pro --json   # for
 
 - Runs `kicad-cli sch erc` and `kicad-cli pcb drc --schematic-parity`,
   errors + warnings, excluded markers skipped.
+- Proves the `.kicad_dru` actually loaded (KiCad ignores a broken rules file
+  without a word, and DRC then "passes"): a copy of the board is checked with
+  a canary rule. Exit code 2 if the rules didn't load.
 - Exit code 1 when anything has error severity (good for CI).
 - Prints where the raw JSON reports are kept; open them for item coordinates.
 - Works with KiCad 8, 9 and 10; finds kicad-cli by itself (or `--kicad-cli PATH`).

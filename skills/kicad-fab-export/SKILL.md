@@ -1,6 +1,6 @@
 ---
 name: kicad-fab-export
-description: Generate a fab-ready manufacturing package from a KiCad 8/9/10 board in one command — Gerber + Excellon drill zip, BOM and pick-and-place (CPL/centroid) in JLCPCB or PCBWay format, optional STEP — and walk through the order settings. Use when the user wants to order or manufacture a PCB or PCBA, export Gerbers, make a BOM or CPL, or says ส่งโรงงาน, สั่งผลิต PCB, ทำไฟล์ Gerber, ไฟล์ส่ง JLCPCB, ยิง SMT, ประกอบบอร์ด, ทำ BOM, ไฟล์ตำแหน่งชิ้นส่วน, even if they don't name kicad-cli.
+description: Generate a fab-ready manufacturing package from a KiCad 8/9/10 board in one command — Gerber + Excellon drill zip, BOM and pick-and-place (CPL/centroid) in JLCPCB or PCBWay format, optional STEP — and walk through the order settings. Use when the user wants to order or manufacture a PCB or PCBA, export Gerbers, make a BOM or CPL, or says ส่งโรงงาน, สั่งผลิต PCB, สั่งทำแผ่นปริ้น, ทำไฟล์ Gerber, ไฟล์ส่ง JLCPCB, ยิง SMT, ประกอบบอร์ด, ทำ BOM, ไฟล์ตำแหน่งชิ้นส่วน, even if they don't name kicad-cli.
 ---
 
 # KiCad fab export (Gerber, drill, BOM, CPL)
@@ -42,6 +42,9 @@ The BOM comes from symbol fields, so fix data in the schematic, not in the CSV:
   properties. DNP parts, power symbols and "exclude from BOM" parts are left out.
 - Identical parts are grouped by Value + Footprint + part number, designators
   listed in full (`R1,R2,R10`) because fabs can't parse ranges like `R1-R3`.
+- Unannotated symbols (`R?`) stop the export. Parts in the BOM but not on the
+  board, or with a different footprint on the board, are listed in `warnings`:
+  the schematic and the board are out of sync — fix with Update PCB from Schematic (F8).
 
 ## CPL rotations (the classic JLCPCB problem)
 
@@ -54,8 +57,9 @@ a correction and export again:
 python3 "<skill>/scripts/export_fab.py" board.kicad_pro --fab jlcpcb --rot "SOT-23*=180" --rot "*QFN*=90"
 ```
 
-`PATTERN` is a glob on the footprint name (Package column), first match wins,
-and the degrees are added to KiCad's rotation. Write down the corrections that worked
+`PATTERN` is a glob on the footprint name (Package column), first match wins;
+the degrees are added to KiCad's rotation for top-side parts and subtracted for
+bottom-side parts (they are seen mirrored). Write down the corrections that worked
 in the project README so the next order uses them. Bottom-side parts are
 the other usual suspect: check them in the preview separately.
 

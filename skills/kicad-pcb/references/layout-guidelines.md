@@ -61,5 +61,5 @@ vendor measured their part.
   layer if the board is too dense), polarity marks outside the part body.
 - Board name, revision, date, and your company/website on F.SilkS — Thai text is
   fine (see thai-silkscreen.md).
-- Mains boards: hazard symbol and "อันตราย ไฟฟ้าแรงสูง" / "DANGER HIGH VOLTAGE" near the mains area.
+- Mains boards: hazard symbol and "อันตราย! ไฟฟ้า 220V" / "DANGER 220V~" near the mains area.
 - Leave a white silkscreen box for serial number / QC sticker if the factory asks for one.

@@ -6,9 +6,9 @@ use the term they used, adding English in brackets the first time.
 
 | ไทย (ที่คนพิมพ์จริง) | English / KiCad term | Note |
 |---|---|---|
-| แผ่นวงจรพิมพ์, แผ่น PCB, บอร์ด, แผงวงจร | PCB, board | "แผงวงจร" also means a populated board (PCBA) |
-| ลายวงจร, ลายทองแดง, ลายปริ้น | copper traces / artwork | "ลายปริ้น" = printed pattern, older slang |
-| ลากลาย, เดินลาย | route, routing | |
+| แผ่นวงจรพิมพ์, แผ่น PCB, แผ่นปริ้น, บอร์ด, แผงวงจร | PCB, board | "แผงวงจร" also means a populated board (PCBA) |
+| ลายวงจร, ลายทองแดง, ลายปริ้น | copper traces / artwork | "ปริ้น" (from print) is everyday usage |
+| ลากลาย, เดินลาย, ทำปริ้น | route, routing / make the PCB | |
 | วาดวงจร, เขียนวงจร | schematic capture | KiCad Schematic Editor (Eeschema) |
 | ลายเท้า, ฟุตปริ้น, ฟุตพริ้นต์ | footprint | |
 | สัญลักษณ์ | symbol | |
@@ -27,7 +27,7 @@ use the term they used, adding English in brackets the first time.
 | ระยะตามผิวฉนวน | creepage | mains safety |
 | ความกว้างลาย | track width | |
 | วงแหวนทองแดงรอบรู | annular ring | |
-| ไฟบ้าน, ไฟ 220 | mains, 220 V AC | treat as hazardous voltage |
+| ไฟบ้าน, ไฟ 220 | mains, 220 V AC | hazardous, but "แรงดันต่ำ" (low voltage) in Thai/IEC terms — not ไฟฟ้าแรงสูง |
 | ไฟเลี้ยง | supply rail (VCC, 3V3, 5V) | |
 | ตัวเก็บประจุดีคัปปลิ้ง, C บายพาส | decoupling / bypass capacitor | |
 | ลงอุปกรณ์, ประกอบบอร์ด, ยิง SMT | assembly, PCBA, SMT placement | |

@@ -38,7 +38,7 @@ elif cmd == ("pcb", "export", "drill"):
     (out / f"{stem}.drl").write_text("M48\nM30\n")
     (out / f"{stem}-drl_map.gbr").write_text("G04 fake*\nM02*\n")
 elif cmd == ("sch", "export", "bom"):
-    shutil.copy(FIX / "bom.csv", opt("-o"))
+    shutil.copy(FIX / os.environ.get("FAKE_BOM", "bom.csv"), opt("-o"))
 elif cmd == ("pcb", "export", "pos"):
     shutil.copy(FIX / "pos.csv", opt("-o"))
 elif cmd == ("pcb", "export", "step"):
@@ -46,6 +46,12 @@ elif cmd == ("pcb", "export", "step"):
 elif cmd == ("sch", "erc"):
     shutil.copy(FIX / os.environ.get("FAKE_ERC", "erc.json"), opt("-o"))
 elif cmd == ("pcb", "drc"):
-    shutil.copy(FIX / os.environ.get("FAKE_DRC", "drc.json"), opt("-o"))
+    report = json.loads((FIX / os.environ.get("FAKE_DRC", "drc.json")).read_text())
+    dru = Path(argv[-1]).with_suffix(".kicad_dru")
+    # like real KiCad: a rules file that doesn't parse is ignored silently
+    if dru.exists() and "kicad_thai_canary" in dru.read_text() and "no_such_constraint" not in dru.read_text():
+        report["violations"].append({"description": "Track width (board setup constraints min width 987.6540 mm)",
+                                     "severity": "error", "type": "track_width", "items": []})
+    Path(opt("-o")).write_text(json.dumps(report))
 else:
     sys.exit(f"fake kicad-cli: unsupported {argv}")

@@ -27,7 +27,8 @@ AI assistants can draw schematics, but the last mile — fab files and selling i
 - **JLCPCB BOM rejected:** `R1-R3` ranges, wrong columns, LCSC numbers in random fields, DNP parts leaking in.
 - **Rotated parts in the CPL** (SOT-23, QFN, bottom side) — `--rot` corrections.
 - **Which มอก. / กสทช. applies**, and what creepage/clearance 220 V needs.
-- **Thai silkscreen:** KiCad's stroke font has no Thai; you need a TrueType font and sizes that survive printing.
+- **Thai silkscreen silently mangled:** KiCad's stroke font has no Thai, and **KiCad 8 drops every Thai vowel and tone mark when plotting** ("ผู้ใหญ่" → "ผใหญ"). Verified: KiCad 9.0.9 and 10.0.6 are correct. The export script warns.
+- **Broken DRC rules pass silently:** KiCad ignores a `.kicad_dru` it can't parse and DRC "passes". `run_checks.py` proves the rules loaded with a canary rule.
 - **Where to make it and what import VAT/duty will cost** (low-value parcels lost their exemptions in 2024–2026).
 
 ## Install
@@ -74,7 +75,7 @@ python3 skills/kicad-fab-export/scripts/export_fab.py hw/board.kicad_pro --fab j
 
 ## Tested against real KiCad
 
-CI runs both scripts with the official Docker images of **KiCad 8.0.9, 9.0.9 and 10.0.6** on KiCad's own `pic_programmer` (2-layer) and `video` (4-layer) demos. It checks for complete copper/outline/drill Gerbers, JLCPCB BOM/CPL format, STEP export, and that every rule preset loads (against a deliberately broken rules file as a control). It also exports Thai Sarabun silkscreen text to Gerber and renders it to PNG for a visual check. Offline tests use a fake `kicad-cli`.
+CI runs both scripts with the official Docker images of **KiCad 8.0.9, 9.0.9 and 10.0.6** on KiCad's own `pic_programmer` (2-layer) and `video` (4-layer) demos. It checks for complete copper/outline/drill Gerbers (exact layer counts), JLCPCB BOM/CPL format, STEP export, that every rule preset really loads (canary rule) and that a deliberately broken rules file is caught. It also plots Thai Sarabun silkscreen text and renders it to PNG for a visual check. Offline tests use a fake `kicad-cli`.
 
 ## Limits
 

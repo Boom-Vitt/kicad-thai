@@ -1,0 +1,11 @@
+{
+  "meta": { "filename": "mains_creepage.kicad_pro", "version": 1 },
+  "net_settings": {
+    "classes": [
+      { "name": "Default", "clearance": 0.2, "track_width": 0.25, "via_diameter": 0.6, "via_drill": 0.3 },
+      { "name": "Mains", "clearance": 0.2, "track_width": 0.5, "via_diameter": 0.6, "via_drill": 0.3 }
+    ],
+    "meta": { "version": 3 },
+    "netclass_patterns": [ { "netclass": "Mains", "pattern": "AC_*" } ]
+  }
+}

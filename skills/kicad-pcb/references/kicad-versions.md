@@ -8,6 +8,7 @@
 | Gerber zone refill in CLI | ❌ | ❌ | `pcb export gerbers --check-zones` |
 | Jobsets (`kicad-cli jobset run`) | ❌ | ✅ | ✅ |
 | Creepage DRC constraint | ❌ | ✅ | ✅ |
+| Thai text plotted correctly (TTF font) | ❌ drops vowels/tone marks | ✅ (9.0.9 tested) | ✅ (10.0.6 tested) |
 | `pcb upgrade` / `sch upgrade` | ❌ | ❌ | ✅ |
 | Layer IDs in `.kicad_pcb` | F.Cu=0, In1=1…, B.Cu=31 | F.Cu=0, B.Cu=2, In1=4, In2=6… | same as 9 |
 | Python | SWIG `pcbnew` | SWIG (deprecated) + IPC API | SWIG (deprecated) + IPC API |
@@ -27,6 +28,8 @@ CLI reference https://docs.kicad.org/10.0/en/cli/cli.html (also /8.0/, /9.0/).
 - **KiCad 10 boards have no netcodes** (file version 20251028): match nets by name.
 - **kicad-cli 8/9 doesn't refill zones.** Zone fills are whatever was saved:
   refill (B) and save in the GUI before DRC/export, or use KiCad 10.
+- **A `.kicad_dru` that doesn't parse is ignored silently** (DRC then passes on
+  built-in rules). `run_checks.py` proves the file loaded with a canary rule.
 - **kicad-cli 8/9 skips a renamed copper layer** requested by its canonical
   name in `pcb export gerbers --layers` (seen on 8.0.9 and 9.0.9 with KiCad's
   own demos). Pass the user name too, and always count the copper Gerbers.
