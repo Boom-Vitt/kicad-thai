@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "kicad-thai",
+  "owner": {
+    "name": "Boom-Vitt",
+    "url": "https://github.com/Boom-Vitt"
+  },
+  "metadata": {
+    "description": "KiCad PCB design skills for the Thai electronics industry"
+  },
+  "plugins": [
+    {
+      "name": "kicad-thai",
+      "source": "./",
+      "description": "ออกแบบ PCB ด้วย KiCad: ตรวจ ERC/DRC ตามสเปกโรงงาน, export Gerber/BOM/CPL ให้ JLCPCB/PCBWay/โรงงานไทย, เช็กลิสต์ มอก./กสทช., หาชิ้นส่วนในไทย, ตัวหนังสือไทยบนซิลก์สกรีน",
+      "version": "0.1.0",
+      "license": "MIT",
+      "category": "development",
+      "keywords": ["kicad", "pcb", "thai", "jlcpcb", "gerber", "drc", "tisi"]
+    }
+  ]
+}

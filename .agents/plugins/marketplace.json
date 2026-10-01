@@ -1,0 +1,12 @@
+{
+  "name": "kicad-thai",
+  "interface": { "displayName": "KiCad Thai ลายวงจร" },
+  "plugins": [
+    {
+      "name": "kicad-thai",
+      "source": { "source": "local", "path": "./" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Coding"
+    }
+  ]
+}

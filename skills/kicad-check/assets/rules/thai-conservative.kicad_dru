@@ -1,0 +1,31 @@
+(version 1)
+# Conservative rules for local Thai PCB shops, unknown fabs, hand-made or
+# first prototype boards: values almost any 2-layer fab can produce with good
+# yield. NOT a specific fab's limits: if you know the fab, use its own numbers.
+# Install as <project>.kicad_dru. Also set Board Setup > Constraints:
+#   min clearance 0.2, min track 0.2, min via diameter 0.6, min hole 0.3,
+#   min annular width 0.15, copper to edge 0.5.
+
+(rule "Conservative track width (8 mil)"
+	(constraint track_width (min 0.2mm)))
+(rule "Conservative copper clearance (8 mil)"
+	(constraint clearance (min 0.2mm)))
+(rule "Conservative drill size"
+	(constraint hole_size (min 0.3mm) (max 6.0mm)))
+(rule "Conservative via diameter"
+	(constraint via_diameter (min 0.6mm))
+	(condition "A.Type == 'Via'"))
+(rule "Conservative annular ring"
+	(constraint annular_width (min 0.15mm)))
+(rule "Conservative hole to copper"
+	(constraint hole_clearance (min 0.3mm)))
+(rule "Conservative hole to hole"
+	(constraint hole_to_hole (min 0.5mm)))
+(rule "Conservative copper to board edge"
+	(constraint edge_clearance (min 0.5mm)))
+(rule "Conservative silkscreen text (Thai needs more height)"
+	(constraint text_thickness (min 0.18mm))
+	(constraint text_height (min 1.2mm))
+	(layer "?.Silkscreen"))
+(rule "Conservative silk to pad"
+	(constraint silk_clearance (min 0.2mm)))

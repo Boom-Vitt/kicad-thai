@@ -1,0 +1,48 @@
+name: test
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python tests/test_scripts.py
+      - run: for f in .claude-plugin/*.json .codex-plugin/*.json .cursor-plugin/*.json .agents/plugins/*.json gemini-extension.json; do python -m json.tool "$f" > /dev/null; done
+
+  kicad:
+    name: real KiCad ${{ matrix.kicad }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kicad: ["8.0", "9.0", "10.0"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: KiCad demo projects for this version
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse -b ${{ matrix.kicad }} https://gitlab.com/kicad/code/kicad.git demos-src
+          git -C demos-src sparse-checkout set demos/pic_programmer demos/video
+      - name: Thai font (Sarabun, OFL)
+        run: |
+          mkdir -p home/.fonts
+          curl -sfL -o home/.fonts/Sarabun-Regular.ttf https://github.com/google/fonts/raw/main/ofl/sarabun/Sarabun-Regular.ttf
+      - name: Export + checks + rule presets on demos
+        run: >
+          docker run --rm -u "$(id -u):$(id -g)" -e HOME=/w/home -v "$PWD:/w" -w /w kicad/kicad:${{ matrix.kicad }}
+          python3 tests/kicad/integration.py demos-src/demos/pic_programmer demos-src/demos/video
+      - name: Thai silkscreen to Gerber
+        run: >
+          docker run --rm -u "$(id -u):$(id -g)" -e HOME=/w/home -v "$PWD:/w" -w /w kicad/kicad:${{ matrix.kicad }}
+          bash -c "fc-list | grep -i sarabun; kicad-cli pcb export gerbers -o thai/ --layers F.SilkS,Edge.Cuts tests/kicad/thai_silkscreen.kicad_pcb && ls -la thai"
+      - name: Render Gerber to PNG
+        run: |
+          sudo apt-get install -y -qq gerbv > /dev/null
+          gerbv -x png -D 600 -b '#0b3a2b' -f '#f4ecd8ff' -f '#e2b450ff' -o thai-silkscreen-kicad${{ matrix.kicad }}.png thai/*Silkscreen* thai/*Edge_Cuts*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thai-silkscreen-kicad${{ matrix.kicad }}
+          path: |
+            thai-silkscreen-kicad${{ matrix.kicad }}.png
+            thai/

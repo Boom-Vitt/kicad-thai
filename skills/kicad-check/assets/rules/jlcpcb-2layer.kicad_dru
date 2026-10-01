@@ -1,0 +1,49 @@
+(version 1)
+# JLCPCB standard 1-2 layer FR-4, 1 oz outer copper: hard manufacturing limits.
+# Source: https://jlcpcb.com/capabilities/pcb-capabilities (checked 2026-10-02).
+# Install as <project>.kicad_dru. Also set Board Setup > Constraints:
+#   min clearance 0.1, min track 0.1, min via diameter 0.25, min hole 0.15,
+#   min annular width 0.05, copper to edge 0.2 (0.4 if V-scored).
+# Cheaper / safer than the limits: track/space >= 0.15, via 0.3 hole / 0.5-0.6 dia
+# (0.15 mm holes and 0.2-0.25 mm holes under 0.45 mm diameter cost extra).
+
+(rule "JLC track width"
+	(constraint track_width (min 0.1mm)))
+(rule "JLC copper clearance"
+	(constraint clearance (min 0.1mm)))
+(rule "JLC SMD pad to pad"
+	(constraint clearance (min 0.15mm))
+	(condition "A.Type == 'Pad' && B.Type == 'Pad'"))
+(rule "JLC drill size"
+	(constraint hole_size (min 0.15mm) (max 6.3mm)))
+(rule "JLC NPTH size"
+	(constraint hole_size (min 0.5mm) (max 6.3mm))
+	(condition "A.Pad_Type == 'NPTH, mechanical'"))
+(rule "JLC via diameter"
+	(constraint via_diameter (min 0.25mm))
+	(condition "A.Type == 'Via'"))
+(rule "JLC via annular ring"
+	(constraint annular_width (min 0.05mm))
+	(condition "A.Type == 'Via'"))
+(rule "JLC PTH annular ring (0.25 recommended)"
+	(constraint annular_width (min 0.18mm))
+	(condition "A.Type == 'Pad'"))
+(rule "JLC via hole to copper"
+	(constraint hole_clearance (min 0.2mm))
+	(condition "A.Type == 'Via'"))
+(rule "JLC PTH hole to copper (0.35 recommended)"
+	(constraint hole_clearance (min 0.28mm))
+	(condition "A.Pad_Type == 'Through-hole'"))
+(rule "JLC hole to hole"
+	(constraint hole_to_hole (min 0.2mm)))
+(rule "JLC pad hole to pad hole"
+	(constraint hole_to_hole (min 0.45mm))
+	(condition "A.Type == 'Pad' && B.Type == 'Pad'"))
+(rule "JLC copper to board edge"
+	(constraint edge_clearance (min 0.2mm)))
+(rule "JLC silkscreen text"
+	(constraint text_thickness (min 0.15mm))
+	(constraint text_height (min 1mm))
+	(layer "?.Silkscreen"))
+(rule "JLC silk to pad"
+	(constraint silk_clearance (min 0.15mm)))

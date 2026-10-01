@@ -1,0 +1,6 @@
+{
+  "name": "kicad-thai",
+  "description": "KiCad PCB design skills for the Thai electronics industry: ERC/DRC with fab rule presets, one-command Gerber/BOM/CPL export for JLCPCB, PCBWay and Thai fabs, TISI (มอก.) and NBTC (กสทช.) compliance checklists, Thai sourcing and Thai silkscreen. ออกแบบ PCB ด้วย KiCad สำหรับอุตสาหกรรมไทย",
+  "version": "0.1.0",
+  "contextFileName": "GEMINI.md"
+}

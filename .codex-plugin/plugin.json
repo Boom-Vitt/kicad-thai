@@ -1,0 +1,30 @@
+{
+  "name": "kicad-thai",
+  "version": "0.1.0",
+  "description": "KiCad PCB design skills for the Thai electronics industry: ERC/DRC with fab rule presets, one-command Gerber/BOM/CPL export for JLCPCB, PCBWay and Thai fabs, TISI (มอก.) and NBTC (กสทช.) compliance checklists, Thai sourcing and Thai silkscreen. ออกแบบ PCB ด้วย KiCad สำหรับอุตสาหกรรมไทย",
+  "author": {
+    "name": "Boom-Vitt",
+    "url": "https://github.com/Boom-Vitt"
+  },
+  "homepage": "https://github.com/Boom-Vitt/kicad-thai",
+  "repository": "https://github.com/Boom-Vitt/kicad-thai",
+  "license": "MIT",
+  "keywords": ["kicad", "pcb", "electronics", "thai", "thailand", "jlcpcb", "pcbway", "gerber", "drc", "dfm", "tisi", "nbtc"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "KiCad Thai ลายวงจร",
+    "shortDescription": "ออกแบบ PCB ด้วย KiCad: ตรวจ DRC, ส่งโรงงาน, มอก./กสทช.",
+    "longDescription": "KiCad 8/9/10 skills for Thai engineers: run ERC/DRC against JLCPCB/PCBWay/Thai-fab rule presets, export a fab-ready Gerber zip plus BOM and pick-and-place files in one command, review designs for DFM, check TISI (มอก.) and NBTC (กสทช.) requirements, find parts and fabs in Thailand, and put Thai text on the silkscreen.",
+    "developerName": "Boom-Vitt",
+    "category": "Coding",
+    "websiteURL": "https://github.com/Boom-Vitt/kicad-thai",
+    "defaultPrompt": [
+      "ตรวจ DRC บอร์ดนี้ตามสเปก JLCPCB แล้วสรุปเป็นภาษาไทย",
+      "export ไฟล์ Gerber + BOM + CPL ส่ง JLCPCB ประกอบ SMT",
+      "บอร์ด ESP32 ไฟบ้าน 220V นี้ต้องขอ มอก. หรือ กสทช. อะไรบ้าง"
+    ],
+    "brandColor": "#1F7A4D",
+    "logo": "./assets/logo.png",
+    "composerIcon": "./assets/logo.png"
+  }
+}

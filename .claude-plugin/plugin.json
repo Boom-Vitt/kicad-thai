@@ -1,0 +1,15 @@
+{
+  "name": "kicad-thai",
+  "displayName": "KiCad Thai ลายวงจร",
+  "version": "0.1.0",
+  "description": "KiCad PCB design skills for the Thai electronics industry: ERC/DRC with fab rule presets, one-command Gerber/BOM/CPL export for JLCPCB, PCBWay and Thai fabs, TISI (มอก.) and NBTC (กสทช.) compliance checklists, Thai sourcing and Thai silkscreen. ออกแบบ PCB ด้วย KiCad สำหรับอุตสาหกรรมไทย",
+  "author": {
+    "name": "Boom-Vitt",
+    "url": "https://github.com/Boom-Vitt"
+  },
+  "homepage": "https://github.com/Boom-Vitt/kicad-thai",
+  "repository": "https://github.com/Boom-Vitt/kicad-thai",
+  "license": "MIT",
+  "keywords": ["kicad", "pcb", "electronics", "thai", "thailand", "jlcpcb", "pcbway", "gerber", "drc", "dfm", "tisi", "nbtc", "มอก", "ลายวงจร"],
+  "skills": "./skills/"
+}

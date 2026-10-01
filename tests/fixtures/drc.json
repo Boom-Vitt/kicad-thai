@@ -1,0 +1,11 @@
+{"$schema": "https://schemas.kicad.org/drc.v1.json", "coordinate_units": "mm", "kicad_version": "9.0.4",
+ "violations": [
+   {"description": "Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)", "severity": "error", "type": "clearance",
+    "items": [{"description": "Track [GND] on F.Cu", "pos": {"x": 100, "y": 50}, "uuid": "d"},
+              {"description": "Pad 1 [VCC] of R1 on F.Cu", "pos": {"x": 100.1, "y": 50}, "uuid": "e"}]},
+   {"description": "Silkscreen clipped by solder mask", "severity": "warning", "type": "silk_over_copper",
+    "items": [{"description": "Reference field of C1", "pos": {"x": 101, "y": 51}, "uuid": "f"}]}],
+ "unconnected_items": [
+   {"description": "Missing connection between items", "severity": "error", "type": "unconnected_items",
+    "items": [{"description": "Pad 2 [SDA] of U1", "pos": {"x": 120, "y": 60}, "uuid": "g"}]}],
+ "schematic_parity": []}

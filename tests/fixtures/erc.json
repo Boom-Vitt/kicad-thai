@@ -1,0 +1,8 @@
+{"$schema": "https://schemas.kicad.org/erc.v1.json", "coordinate_units": "mm", "kicad_version": "9.0.4",
+ "sheets": [{"path": "/", "uuid_path": "/x", "violations": [
+   {"description": "Pin not connected", "severity": "error", "type": "pin_not_connected",
+    "items": [{"description": "Symbol U1 Pin 3 [+, Input]", "pos": {"x": 1.27, "y": 2.54}, "uuid": "a"}]},
+   {"description": "Pin not connected", "severity": "error", "type": "pin_not_connected", "excluded": true,
+    "items": [{"description": "Symbol U2 Pin 1", "pos": {"x": 0, "y": 0}, "uuid": "b"}]},
+   {"description": "Label not connected", "severity": "warning", "type": "label_dangling",
+    "items": [{"description": "Label 'SDA'", "pos": {"x": 5, "y": 5}, "uuid": "c"}]}]}]}
